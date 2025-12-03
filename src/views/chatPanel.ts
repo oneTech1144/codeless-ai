@@ -3,6 +3,8 @@ import { ProviderManager, Message } from '../providers';
 import { ContextService } from '../services/context';
 import { AuthService } from '../services/auth';
 import { AgentIntegration } from '../services/agentIntegration';
+import { modelService, ChatMessage as ModelChatMessage, UsageInfo } from '../services/modelService';
+import { supabaseService } from '../services/supabase';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -29,6 +31,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   private abortController?: AbortController;
   private context?: vscode.ExtensionContext;
   private authService = AuthService.getInstance();
+  private usageInfo: UsageInfo | null = null;
+  private availableModels: Array<{id: string; display_name: string; provider: string; locked: boolean}> = [];
+  private selectedModel: string = 'gpt-4o-mini';
   private agentIntegration?: AgentIntegration;
 
   constructor(
@@ -39,7 +44,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   public setContext(context: vscode.ExtensionContext) {
     this.context = context;
     this.loadConversations();
+    this.loadModels();
     this.authService.setContext(context);
+    
+    // Subscribe to usage changes
+    modelService.onUsageChanged((usage) => {
+      this.usageInfo = usage;
+      this._view?.webview.postMessage({ type: 'usageUpdate', usage });
+    });
     this.authService.onAuthStateChanged(() => this._updateView());
     
     // Initialize agent integration with auto-fix callbacks
@@ -110,6 +122,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
           break;
         case 'abort':
           this.abortController?.abort();
+          break;
+        case 'selectModel':
+          this.selectedModel = data.modelId;
+          modelService.setCurrentModel(data.modelId);
+          break;
+        case 'refreshModels':
+          await this.loadModels();
+          break;
+        case 'getUsage':
+          this._view?.webview.postMessage({ type: 'usageUpdate', usage: this.usageInfo });
           break;
         case 'switchProvider':
           vscode.commands.executeCommand('codelessai.switchProvider');
@@ -451,6 +473,29 @@ Provide clear, concise responses. Format code in markdown with language tags.`;
   private saveConversations() {
     if (this.context) {
       this.context.globalState.update('codelessai.conversations', this.conversations.slice(0, 50));
+    }
+  }
+
+  private async loadModels() {
+    try {
+      const data = await modelService.fetchModels();
+      if (data) {
+        this.availableModels = data.models.map(m => ({
+          id: m.id,
+          display_name: m.display_name,
+          provider: m.provider,
+          locked: m.locked
+        }));
+        this.usageInfo = data.usage;
+        this._view?.webview.postMessage({ 
+          type: 'modelsLoaded', 
+          models: this.availableModels,
+          usage: this.usageInfo,
+          userPlan: data.user_plan
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load models:', error);
     }
   }
 
