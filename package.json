@@ -1,0 +1,325 @@
+{
+  "name": "codeless-ai",
+  "displayName": "CodelessAI",
+  "description": "AI-powered coding assistant with multi-provider support (Claude, GPT-4, Gemini, Ollama)",
+  "version": "0.3.0",
+  "publisher": "codelessai",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "claude",
+    "anthropic",
+    "openai",
+    "gpt-4",
+    "copilot",
+    "code assistant",
+    "gemini",
+    "ollama"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "icon": "media/icon.png",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codelessai.openSettingsPanel",
+        "title": "CodelessAI: Open Settings"
+      },
+      {
+        "command": "codelessai.openChat",
+        "title": "CodelessAI: Open Chat"
+      },
+      {
+        "command": "codelessai.quickActions",
+        "title": "CodelessAI: Quick Actions"
+      },
+      {
+        "command": "codelessai.switchProvider",
+        "title": "CodelessAI: Switch AI Provider"
+      },
+      {
+        "command": "codelessai.explainCode",
+        "title": "CodelessAI: Explain Code"
+      },
+      {
+        "command": "codelessai.fixCode",
+        "title": "CodelessAI: Fix Code"
+      },
+      {
+        "command": "codelessai.refactorCode",
+        "title": "CodelessAI: Refactor Code"
+      },
+      {
+        "command": "codelessai.addComments",
+        "title": "CodelessAI: Add Comments"
+      },
+      {
+        "command": "codelessai.generateCode",
+        "title": "CodelessAI: Generate Code"
+      },
+      {
+        "command": "codelessai.generateTests",
+        "title": "CodelessAI: Generate Tests"
+      },
+      {
+        "command": "codelessai.generateDocs",
+        "title": "CodelessAI: Generate Docs"
+      },
+      {
+        "command": "codelessai.optimizeCode",
+        "title": "CodelessAI: Optimize Code"
+      },
+      {
+        "command": "codelessai.securityReview",
+        "title": "CodelessAI: Security Review"
+      },
+      {
+        "command": "codelessai.askAboutFile",
+        "title": "CodelessAI: Ask About This File"
+      },
+      {
+        "command": "codeless-ai.fixDiagnostic",
+        "title": "CodelessAI: Fix Error with AI"
+      },
+      {
+        "command": "codeless-ai.fixAllInFile",
+        "title": "CodelessAI: Fix All Errors in File"
+      },
+      {
+        "command": "codeless-ai.showDiagnostics",
+        "title": "CodelessAI: Show All Diagnostics"
+      },
+      {
+        "command": "codeless-ai.toggleAutoFix",
+        "title": "CodelessAI: Toggle Auto-Fix on Save"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codelessai",
+          "title": "CodelessAI",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "codelessai": [
+        {
+          "type": "webview",
+          "id": "codelessai.chatView",
+          "name": "Chat"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codelessai.quickActions",
+          "when": "editorTextFocus",
+          "group": "codelessai@0"
+        },
+        {
+          "command": "codelessai.explainCode",
+          "when": "editorHasSelection",
+          "group": "codelessai@1"
+        },
+        {
+          "command": "codelessai.fixCode",
+          "when": "editorHasSelection",
+          "group": "codelessai@2"
+        },
+        {
+          "command": "codelessai.refactorCode",
+          "when": "editorHasSelection",
+          "group": "codelessai@3"
+        },
+        {
+          "command": "codelessai.generateTests",
+          "when": "editorHasSelection",
+          "group": "codelessai@4"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "CodelessAI",
+      "properties": {
+        "codelessai.provider": {
+          "type": "string",
+          "default": "anthropic",
+          "enum": [
+            "anthropic",
+            "openai",
+            "gemini",
+            "ollama",
+            "openrouter"
+          ],
+          "enumDescriptions": [
+            "Anthropic Claude (claude-sonnet-4, claude-opus-4)",
+            "OpenAI GPT (gpt-4o, gpt-4-turbo, o1)",
+            "Google Gemini (gemini-1.5-pro, flash)",
+            "Ollama Local (llama3.2, codellama)",
+            "OpenRouter (multiple providers)"
+          ],
+          "description": "AI provider to use"
+        },
+        "codelessai.anthropicApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Anthropic API key for Claude models"
+        },
+        "codelessai.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your OpenAI API key for GPT models"
+        },
+        "codelessai.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Google AI API key for Gemini models"
+        },
+        "codelessai.openrouterApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your OpenRouter API key"
+        },
+        "codelessai.ollamaBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama server URL"
+        },
+        "codelessai.model": {
+          "type": "string",
+          "default": "claude-sonnet-4-20250514",
+          "enum": [
+            "claude-sonnet-4-20250514",
+            "claude-opus-4-20250514",
+            "claude-3-5-haiku-20241022"
+          ],
+          "description": "Claude model"
+        },
+        "codelessai.openaiModel": {
+          "type": "string",
+          "default": "gpt-4o",
+          "enum": [
+            "gpt-4o",
+            "gpt-4o-mini",
+            "gpt-4-turbo",
+            "o1-preview",
+            "o1-mini"
+          ],
+          "description": "OpenAI model"
+        },
+        "codelessai.geminiModel": {
+          "type": "string",
+          "default": "gemini-1.5-pro",
+          "enum": [
+            "gemini-1.5-pro",
+            "gemini-1.5-flash",
+            "gemini-2.0-flash-exp"
+          ],
+          "description": "Gemini model"
+        },
+        "codelessai.ollamaModel": {
+          "type": "string",
+          "default": "llama3.2",
+          "description": "Ollama model (e.g., llama3.2, codellama)"
+        },
+        "codelessai.maxTokens": {
+          "type": "number",
+          "default": 4096,
+          "description": "Maximum tokens in response"
+        },
+        "codelessai.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Response creativity (0-2)"
+        },
+        "codelessai.inlineCompletions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable inline code completions (experimental)"
+        },
+        "codelessai.autoFixOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically fix errors when saving files"
+        },
+        "codelessai.autoFixEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI-powered auto-fix for errors"
+        },
+        "codelessai.autoFixDelay": {
+          "type": "number",
+          "default": 1500,
+          "description": "Delay in ms before auto-fix starts after save"
+        },
+        "codelessai.autoFixMaxRetries": {
+          "type": "number",
+          "default": 3,
+          "description": "Maximum number of auto-fix attempts per error"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "codelessai.openChat",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      },
+      {
+        "command": "codelessai.quickActions",
+        "key": "ctrl+shift+.",
+        "mac": "cmd+shift+.",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "codelessai.generateCode",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g"
+      },
+      {
+        "command": "codelessai.switchProvider",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p"
+      },
+      {
+        "command": "codelessai.explainCode",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorHasSelection"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@supabase/supabase-js": "^2.86.0"
+  }
+}
